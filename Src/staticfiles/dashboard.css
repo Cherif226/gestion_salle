@@ -1,0 +1,54 @@
+body {
+    background-color: #043266;
+    font-family: Arial, sans-serif;
+
+    
+}
+
+
+.ufr {
+    text-align: center;
+    font-weight: bold;
+    font-size: 50px;
+    margin-bottom: 20px;
+    color: rgb(231, 3, 3);
+}
+.bienvenue {
+    text-align: right;
+    font-weight: bold;
+    margin-right: 50px;
+    font-size: 25px;
+    color: white;
+}
+
+.table-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    color: white;
+}
+.card {
+    border: 1px solid #fa0404;
+    padding: 15px;
+    border-radius: 10px;
+    width: 250px;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+    text-align: center;
+}
+.card h3 {
+    margin-bottom: 10px;
+}
+.btn {
+    display: inline-block;
+    padding: 8px 12px;
+    background-color: #007BFF;
+    color: white;
+    border-radius: 5px;
+    text-decoration: none;
+    margin-top: 10px;
+}
+
+h2{
+    color: white;
+}

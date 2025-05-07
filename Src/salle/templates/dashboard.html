@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'dashboard.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <title>Dashboard</title>
+</head>
+<body>
+    <div class="ufr">{{ coordonateur.ufr }}</div>
+    <div class="bienvenue">
+        <p>
+            <i class="fa-solid fa-user "></i>
+
+             {{ coordonateur.prenom }} {{ coordonateur.nom }}
+
+            <i class=" fa-solid fa-circle-check" style="color: #01e43a;"></i>
+          </p> 
+    </div>
+
+    <h2 style="text-align:center; margin-top: 30px;">Réserver une salle</h2>
+
+    <div class="table-container">
+        {% for item in filieres_et_classes %}
+            {% for classe in item.classes %}
+                <div class="card">
+                    <h3>{{ item.filiere.nom }} - {{ classe.nom }}</h3>
+                    <a class="btn" href="{% url 'reserver_salle' item.filiere.id classe.id %}">
+                        Réserver
+                    </a>
+                </div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+    
+    
+   
+</div>
+
+</body>
+</html>

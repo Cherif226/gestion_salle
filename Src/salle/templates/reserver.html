@@ -1,0 +1,50 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'reserver.css' %}">
+    <title>reservation</title>
+</head>
+<body>
+    <h2>Réservation pour {{ filiere.nom }} - {{ classe.nom }}</h2>
+
+<form method="POST">
+    {% csrf_token %}
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="form-container">
+        <div class="left-column">
+            <label for="salle">Salle :</label>
+            <select name="salle" required>
+                {% for salle in salles %}
+                    <option value="{{ salle.id }}">{{ salle.nom }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="date">Date :</label>
+            <input type="date" name="date" required>
+        </div>
+
+        <div class="right-column">
+            <label for="heure_debut">Heure de début :</label>
+            <input type="time" name="heure_debut" required>
+
+            <label for="heure_fin">Heure de fin :</label>
+            <input type="time" name="heure_fin" required>
+        </div>
+    </div>
+
+    <div class="button-container">
+        <button type="submit">Réserver</button>
+    </div>
+</form>
+
+</body>
+</html>
