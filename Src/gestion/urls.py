@@ -23,5 +23,8 @@ urlpatterns = [
     path('inscription/', views.inscription,name='inscription'),
     path('dashboard/', views.dashboard,name='dashboard'),
     path('reserver_salle/<int:filiere_id>/<int:classe_id>/', views.reserver_salle,name='reserver_salle'),
-    
+    path('reservation/<int:filiere_id>/<int:classe_id>/pdf/', views.reservation_pdf, name='reservation_pdf'),
+    path('liste-reservations/', views.liste_reservations, name='liste_reservations'),
+    path('mes-reservations/', views.mes_reservations, name='mes_reservations'),
+    path('annuler-reservation/<int:reservation_id>/', views.annuler_reservation, name='annuler_reservation'),
 ]
