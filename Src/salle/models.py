@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.utils import timezone
 # Create your models here.
 class UFR(models.Model):
     nom = models.CharField(max_length=100, unique=True)
@@ -33,16 +33,23 @@ class Classe(models.Model):
 class Salle(models.Model):
     nom = models.CharField(max_length=50)
     capacite = models.IntegerField()
+    etat = models.CharField(max_length=10, choices=[('libre', 'Libre'), ('occupee', 'Occupée')], default='libre')
     def __str__(self):
-     return f"{self.nom}  - {self.capacite}"
+     return f"{self.nom}  - {self.capacite} - {self.etat}"
     
 class Reservation(models.Model):
-    filiere = models.ForeignKey(Filiere, on_delete=models.CASCADE)
-    classe = models.ForeignKey(Classe, on_delete=models.CASCADE)
-    salle = models.ForeignKey(Salle, on_delete=models.CASCADE)
-    date = models.DateField()
+    coordonnateur = models.ForeignKey('Coordonateur', on_delete=models.PROTECT)
+    salle = models.ForeignKey('Salle', on_delete=models.CASCADE)
+    filiere = models.ForeignKey('Filiere', on_delete=models.CASCADE)
+    classe = models.ForeignKey('Classe', on_delete=models.CASCADE)
+    jour = models.CharField(max_length=10)
     heure_debut = models.TimeField()
     heure_fin = models.TimeField()
-    coordonateur = models.ForeignKey(Coordonateur, on_delete=models.CASCADE)
+    est_occupe = models.BooleanField(default=True)
+    date_reservation = models.DateTimeField(auto_now_add=True)
+    est_annule = models.BooleanField(default=False)
+    date_annulation = models.DateTimeField(null=True, blank=True) 
+
     def __str__(self):
-     return f"{self.filiere}  - {self.classe} - {self.salle} - {self.date} - {self.heure_debut} - {self.heure_fin} - {self.coordonateur}"
+        return f"{self.salle.nom} réservée pour {self.filiere.nom} - {self.classe.nom} le {self.date_reservation.strftime('%d/%m/%Y %H:%M')}"
+    
