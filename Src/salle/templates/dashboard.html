@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'dashboard.css' %}">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <title>Dashboard</title>
@@ -20,21 +21,33 @@
             <i class=" fa-solid fa-circle-check" style="color: #01e43a;"></i>
           </p> 
     </div>
+<div style="text-align: center; margin-top: 20px;color:white;">
+    <a href="{% url 'mes_reservations' %}" class="btn-liste">
+        <i class="fa-solid fa-calendar-check"></i>
+        Liste des salles réservées
+    </a>
+</div>
 
     <h2 style="text-align:center; margin-top: 30px;">Réserver une salle</h2>
 
-    <div class="table-container">
-        {% for item in filieres_et_classes %}
-            {% for classe in item.classes %}
-                <div class="card">
-                    <h3>{{ item.filiere.nom }} - {{ classe.nom }}</h3>
-                    <a class="btn" href="{% url 'reserver_salle' item.filiere.id classe.id %}">
-                        Réserver
-                    </a>
-                </div>
-            {% endfor %}
-        {% endfor %}
-    </div>
+   <div class="table-container">
+    {% for item in filieres_et_classes %}
+        <div class="filiere-section">
+            <h2>{{ item.filiere.nom }}</h2>
+            <div class="classes-container">
+                {% for classe in item.classes %}
+                    <div class="card">
+                        <h3>{{ classe.nom }}</h3>
+                        <a class="btn" href="{% url 'reserver_salle' item.filiere.id classe.id %}">
+                            Réserver
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
     
     
    

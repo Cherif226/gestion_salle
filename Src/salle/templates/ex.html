@@ -1,0 +1,202 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Réserver une salle</title>
+    <style>
+        body {
+            font-family: Arial;
+            background-color: #f4f4f4;
+            padding: 30px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 50%;
+            margin: auto;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+        }
+        select, button {
+            padding: 10px;
+            width: 100%;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+   <h2>Réservation -{{ filiere.nom }} {{ classe.nom }}</h2>
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
+{% block content %}
+<div class="container mt-4">
+  <h3 class="mb-4">Réservation des salles pour la classe {{ classe.nom }} ({{ filiere.nom }})</h3>
+
+  <!-- Formulaire de sélection de la semaine -->
+  <form method="get" class="row g-2 mb-4">
+    <div class="col-auto">
+      <label for="date_debut" class="form-label">Début de semaine :</label>
+      <input type="date" id="date_debut" name="date_debut" class="form-control" required value="{{ date_debut }}">
+    </div>
+    <div class="col-auto mt-auto">
+      <button type="submit" class="btn btn-primary">Afficher la semaine</button>
+    </div>
+  </form>
+
+  {% if jours %}
+  
+    <h5 class="mb-3">Semaine du {{ jours.0 }} au {{ jours|last }}</h5>
+<table border="1" class="table table-bordered text-center">
+  <thead>
+        <tr>
+          <th>Horaires</th>
+          {% for jour in jours %}
+            <th>{{ jour }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+  {% for debut, fin in creneaux %}
+    <tr>
+      <td>{{ debut }} - {{ fin }}</td>
+      {% for jour in jours %}
+        <td>
+          {% with test_key=jour|add:"|"|add:debut|add:"|"|add:fin %}
+            {% if test_key in horaires_occupees %}
+              <span class="badge bg-danger">Occupé</span>
+            {% else %}
+              <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="jour" value="{{ jour }}">
+                <input type="hidden" name="heure_debut" value="{{ debut }}">
+                <input type="hidden" name="heure_fin" value="{{ fin }}">
+                <select name="salle_id" class="form-select" required>
+                  {% for salle in salles %}
+                    <option value="{{ salle.id }}">{{ salle.nom }}</option>
+                  {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-sm btn-success mt-1">Réserver</button>
+              </form>
+            {% endif %}
+          {% endwith %}
+        </td>
+      {% endfor %}
+    </tr>
+  {% endfor %}
+</tbody>
+</table>
+ {% else %}
+    <div class="alert alert-info">Veuillez d'abord sélectionner une date de début de semaine pour afficher le planning.</div>
+  {% endif %}
+</div>
+{% endblock %}
+ <a href="{% url 'reservation_pdf' filiere.id classe.id %}?date_debut={{ date_debut }}" target="_blank" class="btn btn-success">
+        Télécharger le programme en PDF
+    </a>
+
+</body>
+</html>
+
+
+def est_occupe(jour, debut, fin, horaires_occupees):
+    return (jour, debut, fin) in horaires_occupees
+
+def reserver_salle(request, filiere_id, classe_id):
+    filiere = get_object_or_404(Filiere, id=filiere_id)
+    classe = get_object_or_404(Classe, id=classe_id)
+    salles = Salle.objects.all()
+    
+
+    jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi']
+    creneaux = [('08:00', '10:00'), ('10:00', '12:00'), ('14:00', '18:00')]
+
+    # Récupérer les réservations existantes
+    reservations = Reservation.objects.filter(classe=classe)
+    horaires_occupees = set((r.jour, str(r.heure_debut), str(r.heure_fin)) for r in reservations)
+
+    if request.method == 'POST':
+        jour = request.POST.get('jour')
+        debut = request.POST.get('heure_debut')
+        fin = request.POST.get('heure_fin')
+        salle_id = request.POST.get('salle_id')
+
+        conflits = Reservation.objects.filter(
+            jour=jour,
+            salle_id=salle_id,
+            heure_debut__lt=fin,
+            heure_fin__gt=debut
+        )
+
+        if conflits.exists():
+            messages.error(request, f"Salle déjà réservée le {jour} de {debut} à {fin}.")
+        else:
+            Reservation.objects.create(
+                salle_id=salle_id,
+                filiere=filiere,
+                classe=classe,
+                jour=jour,
+                heure_debut=debut,
+                heure_fin=fin,
+                est_occupe=True
+            )
+            messages.success(request, "Réservation réussie.")
+            return redirect('reserver_salle', filiere_id=filiere_id, classe_id=classe_id)
+
+    return render(request, 'reservation.html', {
+        'filiere': filiere,
+        'classe': classe,
+        'salles': salles,
+        'jours': jours,
+        'creneaux': creneaux,
+        'horaires_occupees': horaires_occupees,
+    })
+
+    #ce qui marche 
+    def reservation_pdf(request, filiere_id, classe_id):
+    filiere = get_object_or_404(Filiere, id=filiere_id)
+    classe = get_object_or_404(Classe, id=classe_id)
+    salles = Salle.objects.all()
+    creneaux = [('08:00', '10:00'), ('10:00', '12:00'), ('14:00', '18:00')]
+
+    date_debut_str = request.GET.get('date_debut')
+    jours = []
+    jours_dates = []
+
+    if date_debut_str:
+        try:
+            date_debut = datetime.strptime(date_debut_str, "%Y-%m-%d").date()
+            for i in range(6):
+                jour_date = date_debut + timedelta(days=i)
+                jours_dates.append(jour_date)
+                jours.append(jour_date.strftime('%A %d %B %Y'))
+        except ValueError:
+            pass
+
+    reservations = Reservation.objects.filter(classe=classe, jour__in=jours_dates)
+
+    # Création du dictionnaire de planning
+    planning = {}
+    for res in Reservation.objects.all():  # ✅ correct
+        date_str = res.date.strftime("%Y-%m-%d")  # Format comme dans le template
+        key = f"{date_str}|{res.heure_debut}|{res.heure_fin}"
+
+
+    planning[key] = res.salle.nom
+
+    context = {
+        'filiere': filiere,
+        'classe': classe,
+        'jours': jours,
+        'creneaux': creneaux,
+        'planning': planning,
+        
+    }
+
+    pdf = render_to_pdf('emploi_du_temps.html', context)
+    return HttpResponse(pdf, content_type='application/pdf')

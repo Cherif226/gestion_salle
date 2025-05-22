@@ -1,0 +1,151 @@
+{% load static %}
+{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Réserver une salle</title>
+    <style>
+        body {
+            font-family: Arial;
+            background-color: #f4f4f4;
+            padding: 30px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 50%;
+            margin: auto;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+        }
+        select, button {
+            padding: 10px;
+            width: 100%;
+            margin-top: 15px;
+        }
+        .disabled-btn {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
+{% block content %}
+<div class="container mt-4">
+  <h3 class="mb-4">Réservation des salles pour la classe {{ classe.nom }} ({{ filiere.nom }})</h3>
+
+  <!-- Formulaire de sélection de la semaine -->
+  <form method="get" class="row g-2 mb-4">
+    <div class="col-auto">
+      <label for="date_debut" class="form-label">Début de semaine :</label>
+      <input type="date" id="date_debut" name="date_debut" class="form-control" required value="{{ date_debut }}">
+    </div>
+    <div class="col-auto mt-auto">
+      <button type="submit" class="btn btn-primary">Afficher la semaine</button>
+    </div>
+  </form>
+
+  {% if jours and jours|length == 6 %}
+  
+    <h5 class="mb-3">Semaine du {{ jours.0 }} au {{ jours|last }}</h5>
+
+<table border="1" class="table table-bordered text-center">
+  <thead>
+        <tr>
+          <th>Horaires</th>
+          {% for jour in jours %}
+            <th>{{ jour }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+  {% for debut, fin in creneaux %}
+    <tr>
+      <td>{{ debut }} - {{ fin }}</td>
+      {% for jour in jours %}
+        <td>
+         {% with cle=jour|add:"|"|add:debut|add:"|"|add:fin %}
+  <form method="post" class="reservation-form">
+    {% csrf_token %}
+    <input type="hidden" name="jour" value="{{ jour }}">
+    <input type="hidden" name="heure_debut" value="{{ debut }}">
+    <input type="hidden" name="heure_fin" value="{{ fin }}">
+    <select name="salle_id" class="form-select" required>
+      <option value="">-- Choisir une salle --</option>
+      {% for salle in salles %}
+        {% with key=jour|add:"|"|add:debut|add:"|"|add:fin %}
+          <option value="{{ salle.id }}"
+            {% if dernier_choix|get_item:key == salle.id|stringformat:"s" %}
+              selected
+            {% endif %}
+          >
+            {{ salle.nom }}
+          </option>
+        {% endwith %}
+      {% endfor %}
+    </select>
+    {% with key=jour|add:"|"|add:debut|add:"|"|add:fin %}
+      <button type="submit" class="btn btn-sm btn-success mt-1 {% if dernier_choix|get_item:key %}disabled-btn{% endif %}" 
+              {% if dernier_choix|get_item:key %}disabled{% endif %}>
+        {% if dernier_choix|get_item:key %}Réservé{% else %}Réserver{% endif %}
+      </button>
+    {% endwith %}
+  </form>
+{% endwith %}
+        </td>
+      {% endfor %}
+    </tr>
+  {% endfor %}
+</tbody>
+</table>
+ {% else %}
+    <div class="alert alert-info">Veuillez d'abord sélectionner une date de début de semaine pour afficher le planning.</div>
+  {% endif %}
+</div>
+{% endblock %}
+ <a href="{% url 'reservation_pdf' filiere.id classe.id %}?date_debut={{ date_debut }}" target="_blank" class="btn btn-success">
+        Télécharger le programme en PDF
+    </a>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Désactiver les formulaires déjà réservés
+    const forms = document.querySelectorAll('.reservation-form');
+    forms.forEach(form => {
+        const select = form.querySelector('select');
+        const button = form.querySelector('button');
+        
+        // Si une salle est déjà sélectionnée, désactiver le bouton
+        if (select.value) {
+            button.disabled = true;
+            button.classList.add('disabled-btn');
+            button.textContent = 'Réservé';
+        }
+        
+        // Activer/désactiver le bouton quand la sélection change
+        select.addEventListener('change', function() {
+            if (this.value) {
+                button.disabled = false;
+                button.classList.remove('disabled-btn');
+                button.textContent = 'Réserver';
+            } else {
+                button.disabled = true;
+                button.classList.add('disabled-btn');
+                button.textContent = 'Choisir une salle';
+            }
+        });
+    });
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,71 @@
+
+
+{% block content %}
+<div class="container">
+    <h2>Vérification horaire des salles</h2>
+    
+    <!-- Formulaire de recherche inchangé -->
+    <form method="get" class="mb-4">
+        <div class="row">
+            <div class="col-md-4">
+                <label for="date">Date :</label>
+                <input type="date" name="date" id="date" class="form-control" value="{{ request.GET.date }}">
+            </div>
+            <div class="col-md-4">
+                <label for="heure">Heure :</label>
+                <select name="heure" id="heure" class="form-select">
+                    {% for h in heures %}
+                    <option value="{{ h }}" {% if request.GET.heure == h %}selected{% endif %}>{{ h }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary">Vérifier</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Résultats -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Salle</th>
+                <th>Capacité</th>
+                <th>Statut global</th>
+                <th>Disponibilité horaire</th>
+                <th>Réservations existantes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for salle in salles %}
+            <tr>
+                <td>{{ salle.nom }}</td>
+                <td>{{ salle.capacite }}</td>
+                <td>
+                    <span class="badge bg-{% if salle.etat == 'libre' %}success{% else %}danger{% endif %}">
+                        {{ salle.etat }}
+                    </span>
+                </td>
+                <td>
+                    {% if salle.disponible %}
+                    <span class="badge bg-success">Disponible</span>
+                    {% else %}
+                    <span class="badge bg-danger">Occupée</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <ul class="list-unstyled">
+                        {% for resa in salle.reservations %}
+                        <li>
+                            {{ resa.jour }} {{ resa.heure_debut|time:"H:i" }}-{{ resa.heure_fin|time:"H:i" }}
+                            ({{ resa.filiere.nom }})
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
