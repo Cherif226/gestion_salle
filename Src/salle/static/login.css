@@ -2,39 +2,45 @@
 body {
     margin: 0;
     padding: 0;
-    height: 100vh;
-    background-color:#043266;
+    min-height: 100vh;
+    background-color: #043266;
     font-family: Arial, sans-serif;
-
-    
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centre horizontalement */
 }
 
-h2{
-    margin-top: 200px;
-    margin-left: 650px;
+h2 {
+    margin-top: 50px;
     color: white;
-    
+    text-align: center; /* Centre le texte */
 }
-p{
+
+p {
     color: white;
-    margin-left: 600px;
+    text-align: center;
+    max-width: 80%; /* Évite les lignes trop longues */
 }
-a{
+
+a {
     color: #007BFF;
 }
+
 form {
-    
     background-color: white;
-    width: 300px;
+    width: 90%; /* Largeur relative */
+    max-width: 300px; /* Limite la largeur max */
     padding: 20px;
     box-shadow: 0 0 10px #ccc;
     border-radius: 8px;
-    margin-left: 550px;
+    margin: 20px auto; /* Centre le formulaire */
 }
+
 input {
-    width: 98%;
+    width: 100%;
     padding: 8px;
     margin-bottom: 10px;
+    box-sizing: border-box; /* Inclut le padding dans la largeur */
 }
 
 button {
@@ -47,6 +53,19 @@ button {
     cursor: pointer;
 }
 
-.message{
+.message {
     color: red;
+    text-align: center;
+}
+
+/* Media Query pour mobile */
+@media (max-width: 768px) {
+    h2 {
+        margin-top: 30px;
+        font-size: 1.5rem; /* Taille de police réduite */
+    }
+
+    form {
+        width: 85%; /* Plus large sur petit écran */
+    }
 }
