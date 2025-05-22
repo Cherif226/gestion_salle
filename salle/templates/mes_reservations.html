@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>mes_reservations</title>
+</head>
+<body>
+     
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Mes réservations</h2>
+     
+    <p class="text-muted">Réservations de {{ coordonateur.prenom }} {{ coordonateur.nom }}</p>
+    
+    <div class="table-responsive">
+        <table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Date réservation</th>
+            <th>Salle</th>
+            <th>Filière</th>
+            <th>Classe</th>
+            <th>Jour</th>
+            <th>Créneau</th>
+            <th>Statut</th>
+            <th>Actions</th>  <!-- Nouvelle colonne -->
+        </tr>
+    </thead>
+    <tbody>
+        {% for resa in reservations %}
+        <tr>
+            <td>{{ resa.date_reservation|date:"d/m/Y H:i" }}</td>
+            <td>{{ resa.salle.nom }}</td>
+            <td>{{ resa.filiere.nom }}</td>
+            <td>{{ resa.classe.nom }}</td>
+            <td>{{ resa.jour }}</td>
+            <td>{{ resa.heure_debut|time:"H:i" }} - {{ resa.heure_fin|time:"H:i" }}</td>
+            <td>
+                {% if resa.est_occupe %}
+                    <span class="badge bg-danger">Occupé</span>
+                {% else %}
+                    <span class="badge bg-success">Libre</span>
+                {% endif %}
+            </td>
+            <td>
+                <form method="post" action="{% url 'annuler_reservation' resa.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-danger" 
+                            onclick="return confirm('Êtes-vous sûr de vouloir annuler cette réservation?')">
+                        <i class="fas fa-times"></i> Annuler
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="8" class="text-center">Aucune réservation trouvée</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+    </div>
+</div>
+{% endblock %}
+</body>
+</html>

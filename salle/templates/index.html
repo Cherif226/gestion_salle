@@ -1,0 +1,30 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Connexion</title>
+    <link rel="stylesheet" href="{% static 'login.css' %}">
+   
+</head>
+<body>
+    <h2>Connexion</h2>
+    <form method="POST" class="login">
+        {% csrf_token %}
+        <label>Email</label><br>
+        <input type="email" name="email"><br>
+        <label>Password</label><br>
+        <input type="password" name="password"><br>
+        <button type="submit">Login</button>
+    </form>
+    <div class="inscription">
+        <p>Vous n'avez pas de compte? <a href="inscription">S'inscrire</a></p>
+         
+       {% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+    </div>
+</body>
+</html>
